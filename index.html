@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa do Gás Jacaraípe</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #C34C0F;
+            --bg-body: #F4F4F4;
+            --card-bg: #FFFFFF;
+            --text-main: #1A1A1A;
+            --whatsapp: #25D366;
+            --pix-green: #2E7D32;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body { background: var(--bg-body); color: var(--text-main); padding-bottom: 20px; }
+
+        header { background: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--primary); }
+        
+        .info-store { 
+            background: white; margin: 10px 15px; padding: 10px; border-radius: 12px; 
+            font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+
+        .section-title { padding: 15px 20px 5px; font-size: 0.9rem; font-weight: bold; color: #555; text-transform: uppercase; }
+        
+        .product-card { 
+            background: var(--card-bg); margin: 8px 15px; padding: 12px; border-radius: 12px; 
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+
+        .prod-info { flex: 1; }
+        .price { color: var(--primary); font-weight: 800; font-size: 1.1rem; }
+        
+        .qty-controls { 
+            display: flex; align-items: center; gap: 12px; background: #f0f0f0; 
+            padding: 6px 12px; border-radius: 8px; 
+        }
+        
+        .btn-qty { 
+            background: none; border: none; color: var(--primary); 
+            font-size: 1.4rem; font-weight: bold; cursor: pointer; 
+        }
+
+        /* FORMULÁRIO SEMPRE VISÍVEL */
+        .order-form {
+            background: white; margin: 20px 15px; padding: 20px;
+            border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary);
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: bold; color: #555; margin-bottom: 5px; }
+        .input-group input { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; 
+            border-radius: 8px; font-size: 1rem; outline: none; 
+        }
+
+        /* ÁREA DO PIX COM COPIAR */
+        .pix-container { 
+            background: #E8F5E9; border: 1px dashed var(--pix-green); 
+            border-radius: 10px; padding: 15px; margin: 15px 0; text-align: center;
+            cursor: pointer; position: relative; transition: 0.3s;
+        }
+        .pix-container:active { background: #C8E6C9; }
+        .pix-copy-label { font-size: 0.7rem; color: var(--pix-green); font-weight: bold; text-transform: uppercase; }
+        .pix-key { font-size: 1.2rem; color: var(--pix-green); font-weight: 900; display: block; margin: 4px 0; }
+        .copy-alert {
+            display: none; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--pix-green); color: white; padding: 4px 10px; border-radius: 5px; font-size: 0.7rem;
+        }
+
+        .total-display { text-align: center; margin: 20px 0; padding: 10px; border-top: 1px solid #eee; }
+
+        .btn-send { 
+            background: var(--whatsapp); color: white; border: none; 
+            width: 100%; padding: 15px; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-size: 1.2rem; font-weight: 800;">🟠 CASA DO GÁS - JACARAÍPE</div>
+</header>
+
+<div class="info-store">
+    <p><i class="fas fa-map-marker-alt"></i> Av. Guarani, 01 - Serra - ES</p>
+    <p><i class="fas fa-phone"></i> (27) 99710-6191</p>
+</div>
+
+<div id="gas-list"></div>
+<div id="agua-list"></div>
+<div id="acessorio-list"></div>
+
+<div class="order-form">
+    <h2 style="font-size: 1rem; margin-bottom: 15px; color: var(--primary);">DADOS PARA ENTREGA</h2>
+    
+    <div class="input-group">
+        <label>NOME COMPLETO</label>
+        <input type="text" id="nome" placeholder="Seu nome">
+    </div>
+
+    <div class="input-group">
+        <label>RUA E NÚMERO</label>
+        <input type="text" id="rua" placeholder="Ex: Rua das Flores, 123">
+    </div>
+
+    <div class="input-group">
+        <label>BAIRRO</label>
+        <input type="text" id="bairro" placeholder="Ex: Jacaraípe">
+    </div>
+
+    <div class="pix-container" onclick="copyPix()">
+        <span class="copy-alert" id="copyAlert">CHAVE COPIADA!</span>
+        <span class="pix-copy-label"><i class="fas fa-copy"></i> Clique para copiar o PIX</span>
+        <span class="pix-key" id="pixKey">27997106191</span>
+        <small style="color: #666;">Proprietário: Casa do Gás</small>
+    </div>
+
+    <div class="total-display">
+        <span style="font-size: 0.9rem; color: #777;">TOTAL DO PEDIDO</span>
+        <div class="price" style="font-size: 1.8rem;">R$ <span id="total">0,00</span></div>
+    </div>
+
+    <button class="btn-send" onclick="finalizarPedido()">
+        ENVIAR PEDIDO <i class="fab fa-whatsapp"></i>
+    </button>
+</div>
+
+<script>
+    const produtos = [
+        { cat: 'gas', nome: 'Gás 13kg Liquigás Recarga', preco: 116.00 },
+        { cat: 'gas', nome: 'Gás 13kg Supergasbras Recarga', preco: 118.00 },
+        { cat: 'agua', nome: 'Água Pedra Azul 20L', preco: 25.00 },
+        { cat: 'acessorio', nome: 'Kit Registro Completo', preco: 70.00 }
+    ];
+    let carrinho = {};
+
+    function render() {
+        const cats = { gas: 'Gás 13kg', agua: 'Água Mineral', acessorio: 'Acessórios' };
+        Object.keys(cats).forEach(c => {
+            let html = `<h2 class="section-title">${cats[c]}</h2>`;
+            produtos.filter(p => p.cat === c).forEach((p) => {
+                const index = produtos.indexOf(p);
+                html += `
+                <div class="product-card">
+                    <div class="prod-info">
+                        <h3>${p.nome}</h3>
+                        <div class="price">R$ ${p.preco.toFixed(2)}</div>
+                    </div>
+                    <div class="qty-controls">
+                        <button class="btn-qty" onclick="change(${index}, -1)">-</button>
+                        <span id="q-${index}" style="font-weight: bold; min-width: 20px; text-align: center;">0</span>
+                        <button class="btn-qty" onclick="change(${index}, 1)">+</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById(`${c}-list`).innerHTML = html;
+        });
+    }
+
+    function change(id, d) {
+        carrinho[id] = Math.max(0, (carrinho[id] || 0) + d);
+        document.getElementById(`q-${id}`).innerText = carrinho[id];
+        let t = 0; 
+        for (let k in carrinho) t += carrinho[k] * produtos[k].preco;
+        document.getElementById('total').innerText = t.toFixed(2).replace('.', ',');
+    }
+
+    // FUNÇÃO DE COPIAR ATUALIZADA PARA CELULARES
+    function copyPix() {
+        const pixKey = "27997106191"; // Número direto para evitar erros de leitura
+        
+        // Tenta o método moderno
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(pixKey).then(() => {
+                showMsg();
+            }).catch(() => {
+                copyFallback(pixKey); // Se der erro no celular, vai pro plano B
+            });
+        } else {
+            copyFallback(pixKey); // Plano B para navegadores antigos/celulares
+        }
+    }
+
+    // Plano B: Cria um elemento invisível para copiar
+    function copyFallback(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed"; // Evita scroll na tela
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showMsg();
+        } catch (err) {
+            alert('Erro ao copiar. Por favor, anote o número: ' + text);
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function showMsg() {
+        const alert = document.getElementById('copyAlert');
+        alert.style.display = 'block';
+        setTimeout(() => { alert.style.display = 'none'; }, 2000);
+    }
+
+    function finalizarPedido() {
+        const n = document.getElementById('nome').value;
+        const r = document.getElementById('rua').value;
+        const b = document.getElementById('bairro').value;
+        
+        let it = ""; 
+        let temItens = false;
+        for (let k in carrinho) {
+            if (carrinho[k] > 0) {
+                it += `• ${carrinho[k]}x ${produtos[k].nome}\n`;
+                temItens = true;
+            }
+        }
+        
+        if (!temItens) return alert("Adicione pelo menos um item!");
+        if (!n || !r || !b) return alert("Preencha os dados de entrega!");
+
+        const total = document.getElementById('total').innerText;
+        const msg = `*NOVO PEDIDO*\n\n${it}\n*Total:* R$ ${total}\n\n*Cliente:* ${n}\n*Endereço:* ${r}\n*Bairro:* ${b}`;
+        
+        window.open(`https://wa.me/55997106191?text=${encodeURIComponent(msg)}`);
+    }
+
+    render();
+</script>
+</body>
+</html>
